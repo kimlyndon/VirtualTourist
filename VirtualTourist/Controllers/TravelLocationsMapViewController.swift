@@ -7,9 +7,20 @@
 //
 
 import UIKit
+import MapKit
+import CoreData
 
 class TravelLocationsMapViewController: UIViewController {
 
+   
+    
+    
+    
+    
+    var dataController: DataController!
+    
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
