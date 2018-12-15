@@ -47,19 +47,30 @@
                                     <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                 </collectionViewFlowLayout>
                                 <cells>
-                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="nyS-2W-AbN">
+                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="nyS-2W-AbN" userLabel="PhotoCell" customClass="PhotoCell" customModule="Virtual_Tourist" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO">
                                             <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="OBG-qK-5Dc">
-                                                    <rect key="frame" x="0.0" y="-5" width="56" height="61"/>
+                                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ycd-eP-m2z">
+                                                    <rect key="frame" x="0.0" y="-9" width="58" height="66"/>
                                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                 </imageView>
+                                                <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="0Ue-08-gZt">
+                                                    <rect key="frame" x="15" y="15" width="20" height="20"/>
+                                                </activityIndicatorView>
                                             </subviews>
                                         </view>
+                                        <constraints>
+                                            <constraint firstItem="0Ue-08-gZt" firstAttribute="centerY" secondItem="nyS-2W-AbN" secondAttribute="centerY" id="UzL-hZ-CdM"/>
+                                            <constraint firstItem="0Ue-08-gZt" firstAttribute="centerX" secondItem="nyS-2W-AbN" secondAttribute="centerX" id="VLl-wf-tcK"/>
+                                        </constraints>
+                                        <connections>
+                                            <outlet property="activityIndicator" destination="0Ue-08-gZt" id="ZBf-5f-Wcc"/>
+                                            <outlet property="imageView" destination="ycd-eP-m2z" id="qg8-Wf-dL5"/>
+                                        </connections>
                                     </collectionViewCell>
                                 </cells>
                             </collectionView>
@@ -80,14 +91,14 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="1Si-Fh-DdU" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1092.753623188406" y="158.70535714285714"/>
+            <point key="canvasLocation" x="1091.25" y="157.5"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="cOx-oT-9VZ">
             <objects>
                 <navigationController id="bUz-AP-g9r" sceneMemberID="viewController">
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="DxS-mt-tC7">
-                        <rect key="frame" x="0.0" y="44" width="414" height="44"/>
+                        <rect key="frame" x="0.0" y="20" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <connections>

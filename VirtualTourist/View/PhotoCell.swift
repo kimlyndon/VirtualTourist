@@ -6,4 +6,11 @@
 //  Copyright © 2018 Kim Lyndon. All rights reserved.
 //
 
-import Foundation
+import UIKit
+
+class PhotoCell: CancelCellTask {
+    
+    @IBOutlet weak var imageView: UIImageView!
+    @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
+    
+}

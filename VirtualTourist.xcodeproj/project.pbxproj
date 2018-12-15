@@ -78,8 +78,8 @@
 			children = (
 				980DFCDB21A4D42C007C60EA /* AppDelegate.swift */,
 				98504EF221BC9264000FAD74 /* Model */,
-				98504EFA21C2E972000FAD74 /* Controllers */,
 				98504F0721C2F53E000FAD74 /* View */,
+				98504EFA21C2E972000FAD74 /* Controllers */,
 				98504F0821C2F558000FAD74 /* Service */,
 				98504EFD21C2EA66000FAD74 /* SupportingFiles */,
 				98504EFE21C2EA8C000FAD74 /* AssetsInfo */,
