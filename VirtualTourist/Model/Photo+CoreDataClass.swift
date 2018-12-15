@@ -10,4 +10,15 @@ import Foundation
 import CoreData
 
 @objc(Photo)
-
+public class Photo: NSManagedObject {
+    convenience init(photoURL: String, photoData: NSData?, context: NSManagedObjectContext) {
+        
+        if let ent = NSEntityDescription.entity(forEntityName: "Photo", in: context) {
+            self.init(entity: ent, insertInto: context)
+            self.imageURL = photoURL
+            self.image = photoData
+        } else {
+            fatalError("Unable to find Photo in entities!")
+        }
+    }
+}
