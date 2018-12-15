@@ -7,3 +7,16 @@
 //
 
 import Foundation
+import UIKit
+
+class CancelCellTask: UICollectionViewCell {
+    
+    var taskToCancelIfCellIsReused: URLSessionTask? {
+        
+        didSet {
+            if let taskToCancel = oldValue {
+                taskToCancel.cancel()
+            }
+        }
+    }
+}
