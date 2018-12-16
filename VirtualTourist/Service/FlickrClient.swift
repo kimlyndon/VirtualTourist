@@ -102,7 +102,8 @@ class FlickrClient: NSObject {
             
             func sendError(_ error: String) {
                 print(error)
-                let userInfo = [NSLocalizedDescriptionKey : error]completionHandlerRequest(nil, NSError?(domain: "performRequest", code: 1, userInfo: userInfo))
+                let userInfo = [NSLocalizedDescriptionKey : error]
+                completionHandlerRequest(nil, NSError?(domain: "performRequest", code: 1, userInfo: userInfo))
             }
             
             guard (error == nil) else {
