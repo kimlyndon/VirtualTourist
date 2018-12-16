@@ -11,8 +11,8 @@ import MapKit
 import CoreData
 
 class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, NSFetchedResultsControllerDelegate {
-    @IBOutlet var mapView: MKMapView!
     
+    @IBOutlet var mapView: MKMapView!
     @IBOutlet var gestureRecognizer: UILongPressGestureRecognizer!
     
     var pin: Pin!

@@ -13,7 +13,7 @@ import CoreData
 class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MKMapViewDelegate, NSFetchedResultsControllerDelegate, UICollectionViewDelegate {
         
         var dataController: DataController!
-                //indexes to track
+        //indexes to track
         var insertedIndexPaths: [IndexPath]!
         var updatedIndexPaths: [IndexPath]!
         var deletedIndexPaths: [IndexPath]!
@@ -35,7 +35,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     
         @IBOutlet weak var mapView: MKMapView!
         @IBOutlet var collectionView: UICollectionView!
-        
+    
         var downloadedPhotos = [Data]()
         var photoInfo: [FlickrClient.Photo]?
         var urlsToDownload = [URL]()
@@ -84,7 +84,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
             print("downloadPhotos")
             
             clearAll()
-            //FlickrClient.sharedInstance().downloadPhotosForLocation(lat: pin.latitude, lon: pin.longitude)
+            
             FlickrClient.sharedInstance().downloadPhotosForLocation1(lat: pin.latitude, lon: pin.longitude) { (success, urls) in
                 
                 guard let urls = urls else {
@@ -112,8 +112,8 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
                         try? self.dataController.viewContext.save()
                         //print("saved CoreData photo info: \(photo)")
                     }
-                    //                print("reloading Data after url download")
-                    //                self.collectionView.reloadData()
+                    //print("reloading Data after url download")
+                    //self.collectionView.reloadData()
                     print("urlsToDownload count: \(self.urlsToDownload.count)\nurls: \(self.urlsToDownload)")
                     completionForDownload(true)
                 }
@@ -182,9 +182,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         
         @IBAction func newCollectionButtonPressed(_ sender: UIBarButtonItem) {
             
-            
             //print("DL photo count: \(downloadedPhotos.count)")
-            
             //fetch request is already established
             //NSBatchDeleteRequest
             if let fetchedObjects = fetchedResultsController.fetchedObjects {
