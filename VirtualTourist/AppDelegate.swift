@@ -4,6 +4,7 @@
 //
 //  Created by Kim Lyndon on 11/20/18.
 //  Copyright © 2018 Kim Lyndon. All rights reserved.
+//  Launch/App image credit: smart.edu.co
 //
 
 import UIKit
