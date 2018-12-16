@@ -6,147 +6,187 @@
 //  Copyright © 2018 Kim Lyndon. All rights reserved.
 //
 
-import Foundation
 import UIKit
-import MapKit
 import CoreData
 
 class FlickrClient: NSObject {
     
-    // Shared Session
-    var session = URLSession.shared
-
-    //MARK: Initializers
-    override init() {
-        super.init()
+    var dataController: DataController!
+    
+    struct Photos: Decodable {
+        let photos: PhotoInfo
+        let stat: String
     }
     
-    //Get all photo URLs for the location
-    func getPhotoURLsForLocation(_ latitude: Double, _ longitude: Double,  _ pageNumber: Int = 1, completionHandlerPhotos: @escaping (_ result: [String]?, _ numberOfPages: Int?, _ error: NSError?)
-        -> Void) {
-        
-    //Specify parameters
-        let request = URLRequest(url: URL(string: "\(Constants.Flickr.BaseURL)?\(Constants.FlickrParameterKeys.Method)=\(Constants.FlickrParameterValues.Method)&\(Constants.FlickrParameterKeys.APIKey)=\(Constants.FlickrParameterValues.APIKey)&\(Constants.FlickrParameterKeys.Latitude)=\(String(latitude))&\(Constants.FlickrParameterKeys.Longitude)=\(String(longitude))&\(Constants.FlickrParameterKeys.Extras)=\(Constants.FlickrParameterValues.SquareURL)&\(Constants.FlickrParameterKeys.PhotosPerPage)=\(Constants.FlickrParameterValues.PhotosPerPage)&\(Constants.FlickrParameterKeys.Page)=\(String(pageNumber))&\(Constants.FlickrParameterKeys.Format)=\(Constants.FlickrParameterValues.Format)&\(Constants.FlickrParameterKeys.NoJSONCallback)=\(Constants.FlickrParameterValues.NoJSONCallback)")!)
-        
-    //Make the request
-        let _ = performRequest(request: request) { (parsedResult, error) in
-            
-            func displayError(_error: String) {
-                let userInfo = [NSLocalizedDescriptionKey : error]
-                completionHandlerPhotos(nil, nil, NSError(domain: "getPhotoURLsForLocation", code: 1, userInfo: userInfo as [String : Any]))
-            }
-            
-    //Send the values to the completion handler
-            if let error = error {
-                displayError(_error: "\(error)")
-            } else {
-                
-                //Did Flickr return an error?
-                guard let stat = parsedResult![Constants.FlickrResponseKeys.Status] as? String, stat == Constants.FlickrResponseValues.OKStatus else {
-                    displayError(_error: "Flickr returned an error")
-                    return
-                }
-                
-        //Check for "photos" key
-                guard let photosDictionary = parsedResult![Constants.FlickrResponseKeys.Photos] as? [String:AnyObject] else {
-                    displayError(_error: "'Photos' key not found")
-                    return
-                }
-                
-        //Check for "photo" key in dictionary
-                guard let photo = photosDictionary[Constants.FlickrResponseKeys.Photo] as? [[String: AnyObject]] else {
-                    displayError(_error: "'Photo' key not in dictionary")
-                    return
-                }
-                
-                var photoURLs = [String]()
-                
-                for photo in photo {
-                    let photoDictionary = photo as [String:Any]
-                    
-        // Does the photo have a key for url_q?
-                    guard let photoURL = photoDictionary[Constants.FlickrResponseKeys.SquareURL] as? String else {
-                        displayError(_error: "'url_q' key not in result!")
-                        return
-                    }
-                    
-                    photoURLs.append(photoURL)
-                }
-                
-                completionHandlerPhotos(photoURLs, pageNumber, nil)
-            }
-        }
+    struct PhotoInfo: Decodable {
+        let photo: [Photo]
+        let page: Int
+        let pages: Int
     }
-    func convertURLToPhotoData(photoURL: String, completionHandler: @escaping(_ photoData: Data?, _ error: NSError?) -> Void) -> URLSessionTask {
+    
+    struct Photo: Decodable {
+        //    Variables needed:
+        //    Farm ID = “farm”
+        //    Server ID = “server”
+        //    ID = “id”
+        //    Secret = “secret”
+        let farm: Int
+        let server: String
+        let id: String
+        let secret: String
+        let url_m: String
+    }
+    
+    
+    var photoResults: [Data] = []
+    var searchResultsCount = 0
+    var photoURLs: [URL] = []
+    
+    // MARK: HELPER FUNCTIONS
+    
+    // create a URL from parameters
+    // SOURCE: used in The Movie Manager udacity sub-project (Section 5: Network Requests)
+    func clearFlickrResults() {
+        photoResults = []
+        photoURLs = []
+    }
+    
+    func flickrURLFromParameters(_ parameters: [String:AnyObject]) -> URL {
+        var components = URLComponents()
         
-        let url = URL(string: photoURL)
+        components.scheme = FlickrClient.Constants.Flickr.APIScheme
+        components.host = FlickrClient.Constants.Flickr.APIHost
+        components.path = FlickrClient.Constants.Flickr.APIPath
+        //        for (key, value) in parameters {
+        //            let queryItem = URLQueryItem(name: key, value: "\(value)")
+        //            //components.queryItems?.append(queryItem)
+        //        }
+        
+        return components.url!
+    }
+    func downloadPhotosForLocation1(lat: Double, lon: Double, _ completionHandlerForDownload: @escaping (_ result: Bool, _ urls: [URL]?) -> Void) {
+        let urlString = "https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=ad57c918d7705a17a075a02858b94f59&lat=\(lat)&lon=\(lon)&radius=1&per_page=21&extras=url_m&format=json&nojsoncallback=1"
+        let url = URL(string: urlString)
+        
+        let session = URLSession.shared
+        
         let request = URLRequest(url: url!)
         
-        let task = session.dataTask(with: request) { data, response, downloadError in
-            
-            if downloadError != nil {
-                //Cancel task
-            } else {
-                completionHandler(data, nil)
-            }
-     }
-        
-        task.resume()
-        return task
-}
-
-//Abstract the guard statements for requests to one location
-    private func performRequest(request: URLRequest, completionHandler: @escaping (_ results: AnyObject?, _ error: NSError?) -> Void) -> URLSessionDataTask {
-        
-        let task = session.dataTask(with: request as URLRequest) { data, response, error in
-            
-            func sendError(_ error: String) {
-                print(error)
-                let userInfo = [NSLocalizedDescriptionKey : error]
-                completionHandler(nil, NSError(domain: "performRequest", code: 1, userInfo: userInfo))
-            }
-            
-            guard (error == nil) else {
-                sendError("There was an error with your request: \(error!)")
+        let task = session.dataTask(with: request) { (data, response, error) in
+            guard (error == nil) else{
+                print("error downloading photos: \(error!)")
                 return
             }
             
             guard let statusCode = (response as? HTTPURLResponse)?.statusCode, statusCode >= 200 && statusCode <= 299 else {
-                let httpError = (response as? HTTPURLResponse)?.statusCode
-                sendError("Your request returned a status code other than 2xx")
+                print("request returned status code other than 2XX")
                 return
             }
             
             guard let data = data else {
-                sendError("No data was returned by the request")
+                print("could not download data")
                 return
             }
             
-            self.convertDataWithCompletionHandler(data, completionHandlerForConvertData: completionHandler)
+            guard let photosInfo = try? JSONDecoder().decode(Photos.self, from: data) else {
+                print("error in decoding process")
+                return
+            }
+            
+            // HOW MANY SEARCH RESULTS DID YOU GET?
+            self.searchResultsCount = photosInfo.photos.photo.count
+            print("search results count: \(self.searchResultsCount)")
+            
+            // PULL PAGES INFO HERE
+            let totalPages = photosInfo.photos.pages
+            
+            // CREATE RANDOM PAGE
+            let pageLimit = min(totalPages, 100)
+            let randomPageNumber = Int(arc4random_uniform(UInt32(pageLimit))) + 1
+            print("random page number = \(randomPageNumber)")
+            
+            // TODO: CALL FUNC THAT EXECUTES SECOND NETWORK REQUEST WITH PAGE NUMBER
+            self.searchForRandomPhotos(urlString: urlString, pageNumber: randomPageNumber, completionHandlerfForRandomPhotoSearch: { (success, urlsToDownload) in
+                guard let urlsToDownload = urlsToDownload else {
+                    print("no urls returned from random search")
+                    return
+                }
+                
+                if (success == true) {
+                    self.photoURLs.append(contentsOf: urlsToDownload)
+                    print("photoURLs count: \(self.photoURLs.count)")
+                    completionHandlerForDownload(success, urlsToDownload)
+                }
+            })
+            
         }
-        
         task.resume()
-        return task
-}
-
-    // When given raw JSON, return a usable Foundation object
-    private func convertDataWithCompletionHandler(_ data: Data, completionHandlerForConvertData: (_ result: AnyObject?, _ error: NSError?) -> Void) {
-        var parsedResult: AnyObject! = nil
-        do {
-            parsedResult = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as AnyObject
-        } catch {
-            let userInfo = [NSLocalizedDescriptionKey : "Could not parse the data as JSON: '\(data)'"]
-            completionHandlerForConvertData(nil, NSError(domain: "convertDataWithCompletionHandler", code: 1, userInfo: userInfo))
-        }
-        
-        completionHandlerForConvertData(parsedResult, nil)
     }
     
-    // MARK: Shared Instance
+    
+    func searchForRandomPhotos(urlString: String, pageNumber: Int, completionHandlerfForRandomPhotoSearch: @escaping (_ result: Bool, _ urls: [URL]?) -> Void) {
+        //print("***search for random photos called")
+        //take urlString parameter from previous method
+        //append page number to it
+        let urlStringWithPageNumber = urlString.appending("&page=\(pageNumber)")
+        //print("new urlString: \(urlStringWithPageNumber)")
+        
+        let url = URL(string: urlStringWithPageNumber)
+        
+        let session = URLSession.shared
+        
+        let request = URLRequest(url: url!)
+        //print("request: \(request)")
+        
+        let task = session.dataTask(with: request) { (data, response, error) in
+            guard (error == nil) else{
+                print("error downloading photos: \(error!)")
+                return
+            }
+            
+            guard let statusCode = (response as? HTTPURLResponse)?.statusCode, statusCode >= 200 && statusCode <= 299 else {
+                print("request returned status code other than 2XX")
+                return
+            }
+            
+            guard let data = data else {
+                print("could not download data")
+                return
+            }
+            
+            guard let randomPhotosInfo = try? JSONDecoder().decode(Photos.self, from: data) else {
+                print("error in decoding process")
+                return
+            }
+            
+            var urlArray = [URL]()
+            
+            //use url in result
+            for photo in randomPhotosInfo.photos.photo {
+                if let photoURL = URL(string: photo.url_m) {
+                    urlArray.append(photoURL)
+                }
+            }
+            
+            //print("photoResults count = \(self.photoResults.count)")
+            //print("photoResults = \(self.photoResults)")
+            completionHandlerfForRandomPhotoSearch(true, urlArray)
+            
+        }
+        task.resume()
+        
+    }
+    
+    func makeImageDataFrom1(flickrURL: URL) -> Data? {
+        return try? Data(contentsOf: flickrURL)
+    }
+    
+    // MARK: SHARED INSTANCE
+    
     
     class func sharedInstance() -> FlickrClient {
         struct Singleton {
-            static var sharedInstance = FlickrClient()
+            static let sharedInstance = FlickrClient()
         }
         return Singleton.sharedInstance
     }

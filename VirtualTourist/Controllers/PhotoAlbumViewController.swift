@@ -10,320 +10,413 @@ import UIKit
 import MapKit
 import CoreData
 
-class PhotoAlbumController: UIViewController {
-
-    @IBOutlet weak var mapView: MKMapView!
-    @IBOutlet weak var collectionView: UICollectionView!
-    @IBOutlet weak var collectionButton: UIBarButtonItem!
-    
-    var pin: Pin!
-    var photos: [Photo] = [Photo]()
-    var dataController: DataController!
-    var fetchedResultsController: NSFetchedResultsController<Photo>!
-    //Indices of photos for fetchedResultsController
-    var photoIndicesToInsert = [IndexPath]()
-    var photoIndicesToDelete = [IndexPath]()
-    var photoIndicesToUpdate = [IndexPath]()
-    var selectedPhotoIndices = [IndexPath]()
-    //Determine if collection button is enabled
-    var numberOfDownloadedImages: Int = 0
-    //Total number of pages returned by Flickr call for pin
-    var numberOfPagesForPin: Int = 0
-    var currentPageNumber: Int = 1
-    
-    //MARK: Actions
-    @IBAction func collectionButtonPressed(_ sender: UIBarButtonItem) {
-        //Remove all photos
-        if sender.title == Constants.BarButtonTitles.NewCollection {
-            collectionButton.isEnabled = false
-            for photo in fetchedResultsController.fetchedObjects! {
-                dataController.viewContext.delete(photo)
+class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MKMapViewDelegate, NSFetchedResultsControllerDelegate, UICollectionViewDelegate {
+        
+        var dataController: DataController!
+        
+        //indexes to track
+        var insertedIndexPaths: [IndexPath]!
+        var updatedIndexPaths: [IndexPath]!
+        var deletedIndexPaths: [IndexPath]!
+        
+        var thread = Thread.current
+        //the location passed from Travel Location Map VC, and whose photos will be displayed
+        var pin: Pin!
+        
+        //the ID passed from the selected pin in prev VC
+        var objectID: NSManagedObjectID!
+        
+        var location: NSManagedObject!
+        
+        var fetchedResultsController: NSFetchedResultsController<Photo>!
+        
+        var currentPinLatitude: Double!
+        var currentPinLongitude: Double!
+        var currentCoordinate: CLLocationCoordinate2D!
+        
+        @IBOutlet weak var mapView: MKMapView!
+        @IBOutlet var collectionView: UICollectionView!
+        
+        
+        var downloadedPhotos = [Data]()
+        var photoInfo: [FlickrClient.Photo]?
+        var urlsToDownload = [URL]()
+        
+        override func viewDidLoad() {
+            super.viewDidLoad()
+            mapView.delegate = self
+            collectionView.dataSource = self
+            collectionView.delegate = self
+            configMap()
+            setupFetchedResultsController()
+            // Do any additional setup after loading the view.
+            //print("view Did Load")
+        }
+        
+        override func viewWillAppear(_ animated: Bool) {
+            super.viewWillAppear(animated)
+            print("view WIll Appear")
+            print("current pin info: \(pin)")
+            setupFetchedResultsController()
+            downloadPhotosOrFetchPhotos()
+        }
+        
+        override func viewWillDisappear(_ animated: Bool) {
+            super.viewWillDisappear(animated)
+            //print("view WILL disappear.")
+        }
+        
+        override func viewDidDisappear(_ animated: Bool) {
+            super.viewDidDisappear(animated)
+            //print("view DID disappear")
+            
+            fetchedResultsController = nil
+            clearAll()
+        }
+        
+        func clearAll() {
+            print("Clearing all local arrays")
+            photoInfo = []
+            downloadedPhotos = []
+            urlsToDownload = []
+            FlickrClient.sharedInstance().clearFlickrResults()
+        }
+        
+        fileprivate func downloadPhotos(_ completionForDownload: @escaping (_ success: Bool) -> Void) {
+            print("downloadPhotos")
+            
+            clearAll()
+            //FlickrClient.sharedInstance().downloadPhotosForLocation(lat: pin.latitude, lon: pin.longitude)
+            FlickrClient.sharedInstance().downloadPhotosForLocation1(lat: pin.latitude, lon: pin.longitude) { (success, urls) in
+                
+                guard let urls = urls else {
+                    print("no url's returned in completion handler")
+                    return
+                }
+                
+                if (success == false) {
+                    print("JSON DL did not complete")
+                    return
+                }
+                
+                //print("photosInfo: \(result.photos.photo)")
+                //self.photoInfo = result.photos.photo
+                
+                
+                self.urlsToDownload.append(contentsOf: urls)
+                
+                DispatchQueue.main.async {
+                    //print("thread during url core data save: \(self.thread)")
+                    for url in urls {
+                        let photo = Photo(context: self.dataController.viewContext)
+                        photo.name = url.absoluteString
+                        photo.location = self.pin
+                        try? self.dataController.viewContext.save()
+                        //print("saved CoreData photo info: \(photo)")
+                    }
+                    //                print("reloading Data after url download")
+                    //                self.collectionView.reloadData()
+                    print("urlsToDownload count: \(self.urlsToDownload.count)\nurls: \(self.urlsToDownload)")
+                    completionForDownload(true)
+                }
+                
+                
             }
             
-            dataController.save()
-            //Update current page number of photo results from Flickr
-            if currentPageNumber < numberOfPagesForPin {
-                currentPageNumber += 1
+        }
+        
+        func downloadPhotosOrFetchPhotos() {
+            print("downloadPhotosOrFetchPhotos")
+            if let photoCount = pin.photos?.count {
+                if photoCount <= 0 {
+                    downloadPhotos({ (success) in
+                        if success == true {
+                            print("success completion")
+                        }
+                    })
+                } else {
+                    //FETCH PHOTOS
+                    //fetchPhotos()
+                    
+                }
+            } else {
+                print("there are no photos to load.")
+            }
+        }
+        
+        private func reloadView() {
+            print("collectionView reloadData")
+            collectionView.reloadData()
+        }
+        
+        private func resetDownloadedPhotos() {
+            downloadedPhotos = []
+        }
+        
+        fileprivate func performFetch() {
+            do {
+                try fetchedResultsController.performFetch()
+            } catch {
+                fatalError("The fetch could not be performed: \(error.localizedDescription)")
+            }
+        }
+        
+        func fetchPhotos() {
+            print("fetchPhotos")
+            resetDownloadedPhotos()
+            performFetch()
+            
+            // testing Fetch
+            if let fetchedObjects = fetchedResultsController.fetchedObjects {
+                print("fetched Objects count: \(fetchedObjects.count)")
+                for photo in fetchedObjects {
+                    if let imageURLstring = photo.name, let imageURL = URL(string: imageURLstring) {
+                        urlsToDownload.append(imageURL)
+                    } else {
+                        print("no image data present in fetched Object.")
+                    }
+                }
+            } else {
+                print("nothing was fetched")
+            }
+        }
+        
+        
+        @IBAction func newCollectionButtonPressed(_ sender: UIBarButtonItem) {
+            
+            
+            //print("DL photo count: \(downloadedPhotos.count)")
+            
+            //fetch request is already established
+            //NSBatchDeleteRequest
+            if let fetchedObjects = fetchedResultsController.fetchedObjects {
+                print("confirming fetched count: \(fetchedObjects.count)")
+                for photo in fetchedObjects {
+                    print("photo info: \(photo.image!.description)")
+                    dataController.viewContext.delete(photo)
+                }
+                //fetchPhotos()
+                //print("FRC final count count = \(fetchedResultsController.fetchedObjects?.count)")
+                //savePhotos()
+            } else {
+                print("no fetched photos present to delete for NewCollection")
+            }
+            
+            //clear any photos from Flickr search, or local arrays
+            clearAll()
+            print("Flickr photo results count: \(FlickrClient.sharedInstance().photoResults.count)")
+            
+            //download new set of photos
+            downloadPhotos { (success) in
+                if success == true {
+                    print("success completion for new collection")
+                }
+            }
+        }
+        
+        func setupFetchedResultsController() {
+            let fetchRequest: NSFetchRequest<Photo> = Photo.fetchRequest()
+            let predicate: NSPredicate?
+            
+            predicate = NSPredicate(format: "location == %@", pin)
+            fetchRequest.predicate = predicate
+            
+            let sortDescriptor = NSSortDescriptor(key: "location", ascending: true)
+            fetchRequest.sortDescriptors = [sortDescriptor]
+            
+            //print("fetchRequest: \(fetchRequest)")
+            fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: nil)
+            fetchedResultsController.delegate = self
+            
+            do {
+                try fetchedResultsController.performFetch()
+            } catch {
+                fatalError("The fetch could not be performed: \(error.localizedDescription)")
+            }
+        }
+        
+        func configMap() {
+            let lat = currentCoordinate.latitude
+            let long = currentCoordinate.longitude
+            
+            let coordinate = CLLocationCoordinate2D(latitude: lat, longitude: long)
+            
+            let annotation = MKPointAnnotation()
+            annotation.coordinate = coordinate
+            
+            let mapSpan = MKCoordinateSpan(latitudeDelta: 0.02, longitudeDelta: 0.02)
+            let region = MKCoordinateRegion(center: coordinate, span: mapSpan)
+            self.mapView.setRegion(region, animated: true)
+            
+            self.mapView.addAnnotation(annotation)
+        }
+        
+        // MARK: - MKMapViewDelegate
+        func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+            let reuseID = "pin2"
+            
+            var pinView = mapView.dequeueReusableAnnotationView(withIdentifier: reuseID) as? MKPinAnnotationView
+            
+            if pinView == nil {
+                pinView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: reuseID)
+                pinView!.canShowCallout = false
+                pinView!.pinTintColor = UIColor.red
+                pinView?.animatesDrop = false
                 
             } else {
-                
-                currentPageNumber = numberOfPagesForPin
+                pinView!.annotation = annotation
             }
             
-            collectionView.isHidden = false
+            return pinView
+        }
+        
+        // MARK: - PHOTO DOWNLOAD FUNCTIONS
+        
+        
+        // MARK: - PERSIST PHOTOS
+        
+        func savePhotos() {
+            if self.dataController.viewContext.hasChanges {
+                print("there were changes.  Attempting to save.")
+                do {
+                    try self.dataController.viewContext.save()
+                } catch {
+                    print("an error occurred while saving: \(error.localizedDescription)")
+                }
+            } else {
+                print("no changes were made.  Not saving.")
+            }
+        }
+        
+        // MARK: - COLLECTION VIEW
+        func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+            print("***Collection View: Number of items in section***")
+            //print("numItemsInSection count: \(fetchedResultsController.sections?[section].numberOfObjects)")
+            return fetchedResultsController.sections?[section].numberOfObjects ?? 0
+        }
+        
+        func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
             
-            //Get all new photos
-            retrievePhotosFromFlickr(forPage: currentPageNumber)
-            
-        } else {
-        //Remove only selected photos
-            for photoIndex in selectedPhotoIndices {
-                let photo = fetchedResultsController.object(at: photoIndex)
-                dataController.viewContext.delete(photo)
+            if indexPath.item == 0 {
+                print("***Collection View: Cell For Row at Index Path***")
             }
             
-            dataController.save()
-            //Reset selected indices
-            selectedPhotoIndices.removeAll()
-            collectionButton.title = Constants.BarButtonTitles.NewCollection
-        }
-    }
-    
-    fileprivate func configFetchResultsController() {
-        let fetchRquest: NSFetchRequest<Photo> = Photo.fetchRequest()
-        let sortDescriptor = NSSortDescriptor(key: "imageURL", ascending: false)
-        let predicate = NSPredicate(format: "pin == %@", pin)
-        fetchRquest.predicate = predicate
-        fetchRquest.sortDescriptors = [sortDescriptor]
-        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRquest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: nil)
-        fetchedResultsController.delegate = self
-        
-        do {
-            try fetchedResultsController.performFetch()
-        } catch {
-            print("Unable to fetch photos: \(error.localizedDescription)")
-        }
-    }
-    
-    // MARK: - View lifecycle
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        // Update UI
-        collectionButton.isEnabled = false
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        
-        configFetchResultsController()
-        configMapForSelectedPin()
-        configPhotos()
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        fetchedResultsController = nil
-    }
-    
-    // Determine if any photos are saved in Core Data
-    func configPhotos() {
-        if (fetchedResultsController.fetchedObjects?.count == 0) {
-            retrievePhotosFromFlickr(forPage: currentPageNumber)
-        }
-    }
-        // Get all photo URLs for pin
-        func retrievePhotosFromFlickr(forPage: Int) {
-            FlickrClient.sharedInstance().getPhotoURLsForLocation(pin.latitude, pin.longitude, forPage, completionHandlerPhotos: { (result, numberOfPages, error) in
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "photoCell", for: indexPath) as! PhotoCell
+            //cell.locationPhoto.image = nil
+            
+            
+            let activityIndicator = UIActivityIndicatorView(style: .whiteLarge)
+            activityIndicator.frame = cell.bounds
+            cell.backgroundColor = UIColor.darkGray
+            cell.imageView.alpha = 0.5
+            cell.addSubview(activityIndicator)
+            cell.imageView.image = #imageLiteral(resourceName: "Placeholder - 120x120")
+            activityIndicator.startAnimating()
+            
+            let aPhoto = fetchedResultsController.object(at: indexPath)
+            
+            //print("aphoto BEFORE: \(aPhoto)")
+            if aPhoto.image != nil {
+                //print("showing fetched image via FRC")
+                cell.locationPhoto.image = UIImage(data: aPhoto.image!)
+                cell.imageView.alpha = 1.0
+                activityIndicator.stopAnimating()
+                return cell
+            } else {
                 
-                if (error == nil) {
-                    // No URLs returned from location; hide collection to show 'No photos' label
-                    if (result?.count == 0) {
+                
+                DispatchQueue.global(qos: .background).async {
+                    if let urlString = aPhoto.name, let imageURL = URL(string: urlString), let image = self.downloadSinglePhoto1(photoURL: imageURL) {
+                        
+                        // do not save to coreData here!!!
+                        //print("image data present.")
                         DispatchQueue.main.async {
-                            self.collectionView.isHidden = true
+                            cell.locationPhoto.image = UIImage(data: image)
+                            cell.imageView.alpha = 1.0
+                            activityIndicator.stopAnimating()
+                            if aPhoto.image == nil {
+                                print("still nil")
+                                aPhoto.image = image
+                                do {
+                                    try self.dataController.viewContext.save()
+                                } catch {
+                                    print("error saving in cellforItem: \(error.localizedDescription)")
+                                }
+                            }
+                            //print("aphoto image: \(aPhoto.image)")
+                            
+                            //print("aphoto info after: \(aPhoto)")
                         }
+                        
                     }
-                    
-                    self.dataController?.viewContext.perform {
-                        for photoURL in result! {
-                            let photo = Photo(photoURL: photoURL, photoData: nil, context: self.dataController.viewContext)
-                            self.pin.addToPhotos(photo)
-                        }
-                    }
-                    self.numberOfPagesForPin = numberOfPages!
-                }
-                else {
-                    self.displayAlert("There seems to be an issue getting photos from Flickr — try again in a couple seconds!")
-                }
-    })
-    
-}
-    
-    func configMapForSelectedPin() {
-        // Center map
-        let center = CLLocationCoordinate2D(latitude: pin.latitude, longitude: pin.longitude)
-        let region = MKCoordinateRegion(center: center, span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
-        self.mapView.setRegion(region, animated: true)
-        // Add pin
-        let annotation = MKPointAnnotation()
-        annotation.coordinate = center
-        self.mapView.addAnnotation(annotation)
-    }
-    
-    func displayAlert(_ message: String) {
-        DispatchQueue.main.async {
-            let alert = UIAlertController(title: "🤨", message: message, preferredStyle: UIAlertController.Style.alert)
-            alert.addAction(UIAlertAction(title: "Got it", style: UIAlertAction.Style.default, handler: nil))
-            self.present(alert, animated: true, completion: nil)
-        }
-    }
-}
-
-// MARK: - MKMapViewDelegate
-
-extension PhotoAlbumController: MKMapViewDelegate {
-    
-    func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
-        let reuseId = "pin"
-        var pinView = mapView.dequeueReusableAnnotationView(withIdentifier: reuseId) as? MKPinAnnotationView
-        if pinView == nil {
-            pinView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: reuseId)
-            pinView!.pinTintColor = .red
-        }
-        return pinView
-    }
-}
-
-// MARK: UICollectionViewDataSource
-
-extension PhotoAlbumController: UICollectionViewDataSource {
-    
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return fetchedResultsController.sections?[section].numberOfObjects ?? 0
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "photoCell", for: indexPath) as! PhotoCell
-        
-        DispatchQueue.main.async {
-            cell.imageView.image = nil
-            cell.backgroundColor = UIColor.lightGray
-            cell.activityIndicator.hidesWhenStopped = true
-            cell.activityIndicator.startAnimating()
-        }
-        
-        // Retrieve photo from fetchedResultsController
-        let photo = fetchedResultsController.object(at: indexPath)
-        
-        // Update UI if photo has image data, else download image data
-        if let photoImageData = photo.image {
-            
-            DispatchQueue.main.async {
-                cell.imageView.image = UIImage(data: photoImageData as Data)
-                cell.activityIndicator.stopAnimating()
-                
-                if (self.numberOfDownloadedImages > 0) {
-                    self.numberOfDownloadedImages = self.numberOfDownloadedImages - 1
-                }
-                if self.numberOfDownloadedImages == 0 {
-                    self.collectionButton.isEnabled = true
                 }
                 
             }
-        }
-        else {
-            // Download image data
-            // This will be called if no image data exists for photo
-            // Then, a new cell will be added to the collectionView and 'cellForItemAt' will be called again to set photo for cell
-            self.numberOfDownloadedImages = self.numberOfDownloadedImages + 1
-            let task = FlickrClient.sharedInstance().convertURLToPhotoData(photoURL: photo.imageURL!, completionHandler: { (photoData, error) in
-                
-                if (error == nil) {
-                    DispatchQueue.main.async {
-                        cell.activityIndicator.stopAnimating()
-                        if (self.numberOfDownloadedImages > 0) {
-                            self.collectionButton.isEnabled = false
-                        }
-                    }
-                    
-                    self.dataController?.viewContext.perform {
-                        photo.image = photoData as NSData?
-                    }
-                } else {
-                    print("Could not download photoData for cell!")
-                }
-            })
             
-            // Cancel converting url to photo data if cell is already used in collection view
-            cell.taskToCancelIfCellIsReused = task
+            return cell
         }
         
-        return cell
-    }
-}
-
-// MARK: UICollectionViewDelegate
-
-extension PhotoAlbumController: UICollectionViewDelegate {
-    
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         
-        let cell = collectionView.cellForItem(at: indexPath as IndexPath)
-        if (!selectedPhotoIndices.contains(indexPath)) {
-            selectedPhotoIndices.append(indexPath)
-            cell?.alpha = 0.5
-        } else {
-            let index = selectedPhotoIndices.index(of: indexPath)
-            selectedPhotoIndices.remove(at: index!)
-            cell?.alpha = 1
+        func downloadSinglePhoto1(photoURL: URL) -> Data? {
+            //print("downloading")
+            return FlickrClient.sharedInstance().makeImageDataFrom1(flickrURL: photoURL)
         }
         
-        let collectionButtonTitle = selectedPhotoIndices.count == 0 ? Constants.BarButtonTitles.NewCollection : Constants.BarButtonTitles.RemoveSelectedPhotos
-        collectionButton.title = collectionButtonTitle
-    }
-}
-
-// MARK: - UICollectionViewDelegateFlowLayout
-//         https://stackoverflow.com/a/45995121
-
-extension PhotoAlbumController: UICollectionViewDelegateFlowLayout {
-    
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let width = (collectionView.bounds.width - (5 * 3)) / 3.0
-        let height = width
         
-        return CGSize(width: width, height: height)
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
-        return UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
-        return 0
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
-        return 2
-        
-    }
-}
-
-// MARK: NSFetchedResultsControllerDelegate
-
-extension PhotoAlbumController: NSFetchedResultsControllerDelegate {
-    
-    // Called when fetchedResultsController objects are about to change
-    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        // We want to reset the index path arrays
-        photoIndicesToInsert.removeAll()
-        photoIndicesToDelete.removeAll()
-        photoIndicesToUpdate.removeAll()
-    }
-    
-    // Called when change has occurred in fetchedResultsController object(s)
-    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
-        
-        switch (type) {
-        case .insert:
-            photoIndicesToInsert.append(newIndexPath!)
-        case .delete:
-            photoIndicesToDelete.append(indexPath!)
-        case .update:
-            photoIndicesToUpdate.append(indexPath!)
-        default:
-            break
+        func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+            
+            let photoToDelete = fetchedResultsController.object(at: indexPath)
+            print("did select: \(photoToDelete.image!)")
+            
+            
+            //collectionView.deleteItems(at: [indexPath])
+            
+            dataController.viewContext.delete(photoToDelete)
         }
-    }
-    
-    // Called when the fetchedResultsController has completed changes
-    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        collectionView.performBatchUpdates( {
-            self.collectionView.insertItems(at: photoIndicesToInsert)
-            self.collectionView.deleteItems(at: photoIndicesToDelete)
-            self.collectionView.reloadItems(at: photoIndicesToUpdate)
-        }, completion: nil)
-    }
+        
+        func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+            //clear arrays
+            insertedIndexPaths = [IndexPath]()
+            updatedIndexPaths = [IndexPath]()
+            deletedIndexPaths = [IndexPath]()
+        }
+        
+        func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
+            switch type {
+            case .insert:
+                print("insert object")
+                insertedIndexPaths.append(newIndexPath!)
+                break
+            case .update:
+                print("update object")
+                updatedIndexPaths.append(indexPath!)
+                break
+            case .delete:
+                print("delete object")
+                deletedIndexPaths.append(indexPath!)
+                break
+            default:
+                print("DEFAULT - no other action needed")
+                break
+            }
+        }
+        
+        func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+            
+            collectionView.performBatchUpdates({() -> Void in
+                for indexPath in self.insertedIndexPaths {
+                    self.collectionView.insertItems(at: [indexPath])
+                }
+                
+                for indexPath in self.updatedIndexPaths {
+                    print("indexPathinfo: \(indexPath)")
+                    self.collectionView.reloadItems(at: [indexPath])
+                }
+                
+                for indexPath in self.deletedIndexPaths {
+                    print("indexPathinfo: \(indexPath)")
+                    self.collectionView.deleteItems(at: [indexPath])
+                }
+            }, completion: nil)
+        }
 }

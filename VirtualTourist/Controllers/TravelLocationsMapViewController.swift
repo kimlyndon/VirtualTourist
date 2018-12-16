@@ -10,177 +10,187 @@ import UIKit
 import MapKit
 import CoreData
 
-class TravelLocationsMapViewController: UIViewController {
-
-   
-    @IBOutlet weak var mapView: MKMapView!
-    @IBOutlet weak var editInfo: UIView!
+class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, NSFetchedResultsControllerDelegate {
+    @IBOutlet var mapView: MKMapView!
     
-    var pins: [Pin] = [Pin]()
+    @IBOutlet var gestureRecognizer: UILongPressGestureRecognizer!
     
-    // This is injected when app loads
+    var pin: Pin!
+    var objectID: NSManagedObjectID!
+    var objectToPass: NSManagedObject!
     var dataController: DataController!
     
-    
+    var fetchedResultsController: NSFetchedResultsController<Pin>!
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        // Do any additional setup after loading the view, typically from a nib.
+        mapView.delegate = self
+        setupFetchedResultsController()
         
-        configLongPressRecognizer()
-        
-        // Initialize Edit-Done button
-        self.navigationItem.rightBarButtonItem = self.editButtonItem
-        
-        // Retrieve pins from Core Data
-        loadPins()
+        //        if let pin = pin {
+        //            print("Pin as of loading: \(pin)")
+        //        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
-        // Show previous map center coordinate
-        getMapCoordinates()
+        setupFetchedResultsController()
+        //        if let pin = pin {
+        //            print("Pin as of loading: \(pin)")
+        //        }
     }
     
-    func configLongPressRecognizer() {
-        let longPress = UILongPressGestureRecognizer(target: self, action: #selector(addPinOnLongPress))
-        longPress.minimumPressDuration = 1 // seconds
-        mapView.addGestureRecognizer(longPress)
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
     }
     
-    @objc func addPinOnLongPress(_ recognizer: UIGestureRecognizer) {
-        let location = recognizer.location(in: self.mapView)
-        let locationCoordinate : CLLocationCoordinate2D = mapView.convert(location, toCoordinateFrom: self.mapView)
-        
-        // Don't drop pins if user is dragging or lifting finger
-        if recognizer.state == .began {
-            // Persist pin to Core Data
-            createPin(coordinate: locationCoordinate)
-            // Add pin as point annotation on map
-            addPinToMapFrom(coordinate: locationCoordinate)
-    }
-}
-    
-    func addPinToMapFrom(coordinate: CLLocationCoordinate2D) {
-        let pointAnnotation = MKPointAnnotation()
-        pointAnnotation.coordinate = coordinate
-        mapView.addAnnotation(pointAnnotation)
-    }
-    
-    func createPin(coordinate: CLLocationCoordinate2D){
-        let pin = Pin(longitude: coordinate.longitude, latitude: coordinate.latitude, context: dataController.viewContext)
-        pins.append(pin)
-        try? dataController.viewContext.save()
-    }
-    
-    func loadPins() {
-        let request: NSFetchRequest<Pin> = Pin.fetchRequest()
-        if let result = try? dataController?.viewContext.fetch(request) {
-            for pin in result! {
-                let latitude = pin.latitude
-                let longitiude = pin.longitude
-                let coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitiude)
-                addPinToMapFrom(coordinate: coordinate)
-                // Add to pins array
-                self.pins.append(pin)
+    fileprivate func loadPins() {
+        if let fetchedObjects = fetchedResultsController.fetchedObjects {
+            //print("total objects with ID: \(String(describing: fetchedObjects.count))")
+            
+            var annotations = [MKPointAnnotation]()
+            
+            //iterate through fetchedObjects
+            for object in fetchedObjects {
+                
+                //gather lat & lon to create coordinates
+                let lat = CLLocationDegrees(object.latitude)
+                let long = CLLocationDegrees(object.longitude)
+                
+                let coordinate = CLLocationCoordinate2D(latitude: lat, longitude: long)
+                
+                //create annotation
+                let annotation = MKPointAnnotation()
+                annotation.coordinate = coordinate
+                
+                annotations.append(annotation)
             }
+            
+            //add annotation to map
+            self.mapView.addAnnotations(annotations)
         }
     }
     
-    func deletePinWith(coordinate: CLLocationCoordinate2D) {
-        let request: NSFetchRequest<Pin> = Pin.fetchRequest()
-        if let result = try? dataController?.viewContext.fetch(request) {
-            for pin in result! {
-                if pin.longitude == coordinate.longitude && pin.latitude == coordinate.latitude {
-                    // Delete from Core Data
-                    dataController.viewContext.delete(pin)
-                }
-            }
-        }
-    }
-    
-    // Edit-Done actions
-    override func setEditing(_ editing: Bool, animated: Bool) {
-        super.setEditing(editing, animated: animated)
+    fileprivate func setupFetchedResultsController() {
+        let fetchRequest: NSFetchRequest<Pin> = Pin.fetchRequest()
+        let sortDescriptor = NSSortDescriptor(key: "latitude", ascending: true)
+        fetchRequest.sortDescriptors = [sortDescriptor]
         
-        if editing {
-            editInfo.isHidden = false
-            mapView.frame.origin.y = -70
-        } else {
-            editInfo.isHidden = true
-            mapView.frame.origin.y = 0
+        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: nil)
+        fetchedResultsController.delegate = self
+        
+        do {
+            try fetchedResultsController.performFetch()
+        } catch {
+            fatalError("The fetch could not be performed: \(error.localizedDescription)")
+        }
+        
+        self.loadPins()
+    }
+    
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+    
+    @IBAction func getTouchLocation(_ sender: UILongPressGestureRecognizer) {
+        if gestureRecognizer.state == .began {
+            let point = gestureRecognizer.location(in: self.mapView)
+            let coordinate = self.mapView.convert(point, toCoordinateFrom: self.mapView)
+            //print("coordinate: \(coordinate)")
+            
+            //add map annotation
+            let annotation = MKPointAnnotation()
+            annotation.coordinate = coordinate
+            
+            //add annotation to map
+            self.mapView.addAnnotation(annotation)
+            
+            //save pin and coordinate
+            addPin(coordinate: coordinate)
         }
     }
     
-    // Save map coordinates to UserDefaults on segue
-    func saveMapCoordinates(coordinates: [CLLocationDegrees]) {
-        UserDefaults.standard.set(coordinates, forKey: "centerCoordinate")
+    func addPin(coordinate: CLLocationCoordinate2D) {
+        let pin = Pin(context: dataController.viewContext)
+        pin.latitude = coordinate.latitude
+        pin.longitude = coordinate.longitude
+        pin.id = String(arc4random())
+        try! dataController.viewContext.save()
     }
     
-    // Get map coordinates from UserDefaults
-    func getMapCoordinates() {
-        if let coordinates = UserDefaults.standard.value(forKey: "centerCoordinate") as? [CLLocationDegrees] {
-            mapView.centerCoordinate.latitude = coordinates[0]
-            mapView.centerCoordinate.longitude = coordinates[1]
-        }
-    }
-}
-
-// MARK: - MKMapViewDelegate
-
-extension TravelLocationsMapViewController: MKMapViewDelegate {
-    
+    // MARK: - MKMapViewDelegate
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
-        let reuseId = "pin"
-        var pinView = mapView.dequeueReusableAnnotationView(withIdentifier: reuseId) as? MKPinAnnotationView
+        let reuseID = "pin"
+        
+        var pinView = mapView.dequeueReusableAnnotationView(withIdentifier: reuseID) as? MKPinAnnotationView
+        
         if pinView == nil {
-            pinView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: reuseId)
-            pinView!.pinTintColor = .red
-            pinView!.animatesDrop = true
+            pinView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: reuseID)
+            pinView!.canShowCallout = false
+            pinView!.pinTintColor = UIColor.red
+            pinView?.animatesDrop = false
+            
+        } else {
+            pinView!.annotation = annotation
         }
+        
         return pinView
     }
     
+    
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-        mapView.deselectAnnotation(view.annotation, animated: true)
-        
-        // Delete pin if editing
-        if isEditing {
-            deletePinWith(coordinate: (view.annotation?.coordinate)!)
-            try? dataController.viewContext.save()
-            // Remove from map
-            mapView.removeAnnotation(view.annotation!)
+        //print("annotation coordinate: \(view.annotation!.coordinate)")
+        if checkForMatching(coordinate: view.annotation!.coordinate) {
+            self.performSegue(withIdentifier: "showPhotoAlbum", sender: self)
+        } else {
+            print("can't segue")
             return
         }
+    }
+    
+    //check selected annotation's coordinate, and compare to fetched objects
+    func checkForMatching(coordinate: CLLocationCoordinate2D) -> Bool {
+        do {
+            try fetchedResultsController.performFetch()
+        } catch {
+            fatalError("The fetch could not be performed to match pin location data: \(error.localizedDescription)")
+        }
         
-        let photoAlbumViewController = self.storyboard?.instantiateViewController(withIdentifier: "photoAlbum") as! PhotoAlbumController
-        // Send pin to photoAlbumViewController
-        for pin in pins {
-            if pin.latitude == view.annotation?.coordinate.latitude && pin.longitude == view.annotation?.coordinate.longitude {
-                photoAlbumViewController.pin = pin
-                break
+        if let savedPins = fetchedResultsController.fetchedObjects {
+            for pin in savedPins {
+                
+                if pin.latitude == coordinate.latitude && pin.longitude == coordinate.longitude{
+                    //self.objectID = pin.objectID
+                    self.pin = pin
+                    return true
+                } else {
+                    //print("numbers don't match")
+                }
             }
         }
-        // Dependency injection
-        photoAlbumViewController.dataController = dataController
-        // Segue to photo album
-        self.navigationController?.pushViewController(photoAlbumViewController, animated: true)
+        return false
     }
+    
     
     func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
-        // Save map coordinates
-        var coordinates = [CLLocationDegrees]()
-        coordinates.append(mapView.centerCoordinate.latitude)
-        coordinates.append(mapView.centerCoordinate.longitude)
-        let appDelegate = UIApplication.shared.delegate as! AppDelegate
-        appDelegate.coordinate = coordinates
-        saveMapCoordinates(coordinates: coordinates)
+        //print("region changed")
+        //print("mapView.region: \(mapView.region)")
+    }
+    
+    // MARK: - NAVIGATION
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "showPhotoAlbum" {
+            //send lat & long to new VC
+            let vc = segue.destination as? PhotoAlbumViewController
+            let coordinate = self.mapView.selectedAnnotations[0].coordinate
+            
+            vc?.currentCoordinate = coordinate
+            vc?.dataController = dataController
+            vc?.objectID = self.objectID
+            vc?.pin = self.pin
+        }
     }
 }
-
-    
-    
-
-
-
 
