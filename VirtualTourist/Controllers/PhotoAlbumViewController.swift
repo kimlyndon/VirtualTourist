@@ -314,7 +314,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
             //print("aphoto BEFORE: \(aPhoto)")
             if aPhoto.image != nil {
                 //print("showing fetched image via FRC")
-                cell.locationPhoto.image = UIImage(data: aPhoto.image!)
+                cell.imageView.image = UIImage(data: aPhoto.image!)
                 cell.imageView.alpha = 1.0
                 activityIndicator.stopAnimating()
                 return cell
@@ -327,7 +327,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
                         // do not save to coreData here!!!
                         //print("image data present.")
                         DispatchQueue.main.async {
-                            cell.locationPhoto.image = UIImage(data: image)
+                            cell.imageView.image = UIImage(data: image)
                             cell.imageView.alpha = 1.0
                             activityIndicator.stopAnimating()
                             if aPhoto.image == nil {
