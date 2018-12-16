@@ -18,7 +18,7 @@ class PhotoAlbumController: UIViewController {
     
     var pin: Pin!
     var photos: [Photo] = [Photo]()
-    var dataController: dataController!
+    var dataController: DataController!
     var fetchedResultsController: NSFetchedResultsController<Photo>!
     //Indices of photos for fetchedResultsController
     var photoIndicesToInsert = [IndexPath]()
@@ -58,7 +58,7 @@ class PhotoAlbumController: UIViewController {
         } else {
         //Remove only selected photos
             for photoIndex in selectedPhotoIndices {
-                let photo = fetchedResultsController.object.(at: photoIndex)
+                let photo = fetchedResultsController.object(at: photoIndex)
                 dataController.viewContext.delete(photo)
             }
             

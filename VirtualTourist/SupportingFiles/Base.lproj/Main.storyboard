@@ -69,7 +69,6 @@
                                         </constraints>
                                         <connections>
                                             <outlet property="activityIndicator" destination="0Ue-08-gZt" id="ZBf-5f-Wcc"/>
-                                            <outlet property="imageView" destination="ycd-eP-m2z" id="qg8-Wf-dL5"/>
                                         </connections>
                                     </collectionViewCell>
                                 </cells>
@@ -88,6 +87,10 @@
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="VXn-y9-owG"/>
                     </view>
+                    <connections>
+                        <outlet property="collectionView" destination="Tw1-9L-b2l" id="BUX-J4-z5L"/>
+                        <outlet property="mapView" destination="SQb-XF-N9s" id="IAE-A1-Uve"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="1Si-Fh-DdU" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>

@@ -21,7 +21,7 @@ struct Constants {
         static let Extras = "extras"
         static let Format = "format"
         static let NoJSONCallback = "nojsoncallback"
-        static let PhotoPerPage = "per_page"
+        static let PhotosPerPage = "per_page"
         static let Page = "page"
         static let Radius = "radius"
         static let SafeSearch = "safe_search"
@@ -36,7 +36,8 @@ struct Constants {
         static let Extras = "url_m"
         static let Radius = "5"
         static let SafeSearch = "1"
-        static let PhotoPerPage = "21"
+        static let PhotosPerPage = "21"
+        static let SquareURL = "url_q"
     }
     
     //MARK: Flickr Response Keys

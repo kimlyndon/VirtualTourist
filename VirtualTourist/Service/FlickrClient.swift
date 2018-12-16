@@ -26,7 +26,7 @@ class FlickrClient: NSObject {
         -> Void) {
         
     //Specify parameters
-        let request = URLRequest(url: URL(string: "\(Constants.Flickr.BaseURL)?\(Constants.FlickrParameterKeys.Method)=\(Constants.FlickrParameterValues.Method)&\(Constants.FlickrParameterKeys.APIKey)=\(Constants.FlickrParameterValues.APIKey)&\(Constants.FlickrParameterKeys.Latitude)=\(String(latitude))&\(Constants.FlickrParameterKeys.Longitude)=\(String(longitude))&\(Constants.FlickrParameterKeys.Extras)=\(Constants.FlickrParameterValues.SquareURL)&\(Constants.FlickrParameterKeys.PerPage)=\(Constants.FlickrParameterValues.PhotoPerPage)&\(Constants.FlickrParameterKeys.Page)=\(String(pageNumber))&\(Constants.FlickrParameterKeys.Format)=\(Constants.FlickrParameterValues.Format)&\(Constants.FlickrParameterKeys.NoJSONCallback)=\(Constants.FlickrParameterValues.NoJSONCallback)")!)
+        let request = URLRequest(url: URL(string: "\(Constants.Flickr.BaseURL)?\(Constants.FlickrParameterKeys.Method)=\(Constants.FlickrParameterValues.Method)&\(Constants.FlickrParameterKeys.APIKey)=\(Constants.FlickrParameterValues.APIKey)&\(Constants.FlickrParameterKeys.Latitude)=\(String(latitude))&\(Constants.FlickrParameterKeys.Longitude)=\(String(longitude))&\(Constants.FlickrParameterKeys.Extras)=\(Constants.FlickrParameterValues.SquareURL)&\(Constants.FlickrParameterKeys.PhotosPerPage)=\(Constants.FlickrParameterValues.PhotosPerPage)&\(Constants.FlickrParameterKeys.Page)=\(String(pageNumber))&\(Constants.FlickrParameterKeys.Format)=\(Constants.FlickrParameterValues.Format)&\(Constants.FlickrParameterKeys.NoJSONCallback)=\(Constants.FlickrParameterValues.NoJSONCallback)")!)
         
     //Make the request
         let _ = performRequest(request: request) { (parsedResult, error) in
@@ -38,24 +38,24 @@ class FlickrClient: NSObject {
             
     //Send the values to the completion handler
             if let error = error {
-                displayError("\(error)")
+                displayError(_error: "\(error)")
             } else {
                 
                 //Did Flickr return an error?
-                guard let stat = parsedResult![Constants.FlickrResponseKeys.Status] as? String, stat == Constants.FlickrResponseValues.Status else {
-                    displayError("Flickr returned an error")
+                guard let stat = parsedResult![Constants.FlickrResponseKeys.Status] as? String, stat == Constants.FlickrResponseValues.OKStatus else {
+                    displayError(_error: "Flickr returned an error")
                     return
                 }
                 
         //Check for "photos" key
                 guard let photosDictionary = parsedResult![Constants.FlickrResponseKeys.Photos] as? [String:AnyObject] else {
-                    displayError("'Photos' key not found")
+                    displayError(_error: "'Photos' key not found")
                     return
                 }
                 
         //Check for "photo" key in dictionary
                 guard let photo = photosDictionary[Constants.FlickrResponseKeys.Photo] as? [[String: AnyObject]] else {
-                    displayError("'Photo' key not in dictionary")
+                    displayError(_error: "'Photo' key not in dictionary")
                     return
                 }
                 
@@ -77,7 +77,7 @@ class FlickrClient: NSObject {
             }
         }
     }
-    func convertURLToPhotoData(photURL: String, completionHandler: @escaping(_ photoData: Data?, _ error: NSError?) -> Void) -> URLSessionTask {
+    func convertURLToPhotoData(photoURL: String, completionHandler: @escaping(_ photoData: Data?, _ error: NSError?) -> Void) -> URLSessionTask {
         
         let url = URL(string: photoURL)
         let request = URLRequest(url: url!)
@@ -102,7 +102,7 @@ class FlickrClient: NSObject {
             
             func sendError(_ error: String) {
                 print(error)
-                let userInfo = [NSLocalizedDescriptionKey : error] completionHandlerRequest(nil, NSError?(domain: "performRequest", code: 1, userInfo: userInfo))
+                let userInfo = [NSLocalizedDescriptionKey : error]completionHandlerRequest(nil, NSError?(domain: "performRequest", code: 1, userInfo: userInfo))
             }
             
             guard (error == nil) else {
