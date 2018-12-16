@@ -33,7 +33,7 @@ class FlickrClient: NSObject {
             
             func displayError(_error: String) {
                 let userInfo = [NSLocalizedDescriptionKey : error]
-                completionHandlerPhotos(nil, nil, NSError(domain: "getPhotoURLsForLocation", code: 1, userInfo: userInfo))
+                completionHandlerPhotos(nil, nil, NSError(domain: "getPhotoURLsForLocation", code: 1, userInfo: userInfo as [String : Any]))
             }
             
     //Send the values to the completion handler
