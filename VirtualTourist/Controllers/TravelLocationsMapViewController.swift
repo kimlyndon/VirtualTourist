@@ -70,7 +70,7 @@ class TravelLocationsMapViewController: UIViewController {
     func createPin(coordinate: CLLocationCoordinate2D){
         let pin = Pin(longitude: coordinate.longitude, latitude: coordinate.latitude, context: dataController.viewContext)
         pins.append(pin)
-        dataController.save()
+        try? dataController.viewContext.save()
     }
     
     func loadPins() {
@@ -147,7 +147,7 @@ extension TravelLocationsMapViewController: MKMapViewDelegate {
         // Delete pin if editing
         if isEditing {
             deletePinWith(coordinate: (view.annotation?.coordinate)!)
-            dataController.save()
+            try? dataController.viewContext.save()
             // Remove from map
             mapView.removeAnnotation(view.annotation!)
             return

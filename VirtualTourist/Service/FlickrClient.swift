@@ -61,19 +61,19 @@ class FlickrClient: NSObject {
                 
                 var photoURLs = [String]()
                 
-                for photo in photos {
+                for photo in photo {
                     let photoDictionary = photo as [String:Any]
                     
         // Does the photo have a key for url_q?
                     guard let photoURL = photoDictionary[Constants.FlickrResponseKeys.SquareURL] as? String else {
-                        displayError("'url_q' key not in result!")
+                        displayError(_error: "'url_q' key not in result!")
                         return
                     }
                     
                     photoURLs.append(photoURL)
                 }
                 
-                completionHandlerPhotos(photoURLs, pages, nil)
+                completionHandlerPhotos(photoURLs, pageNumber, nil)
             }
         }
     }
@@ -103,7 +103,7 @@ class FlickrClient: NSObject {
             func sendError(_ error: String) {
                 print(error)
                 let userInfo = [NSLocalizedDescriptionKey : error]
-                completionHandlerRequest(nil, NSError?(domain: "performRequest", code: 1, userInfo: userInfo))
+                completionHandler(nil, NSError(domain: "performRequest", code: 1, userInfo: userInfo))
             }
             
             guard (error == nil) else {
@@ -122,7 +122,7 @@ class FlickrClient: NSObject {
                 return
             }
             
-            self.convertDataWithCompletionHandler(data, completionHandlerForConvertData: completionHandlerRequest)
+            self.convertDataWithCompletionHandler(data, completionHandlerForConvertData: completionHandler)
         }
         
         task.resume()

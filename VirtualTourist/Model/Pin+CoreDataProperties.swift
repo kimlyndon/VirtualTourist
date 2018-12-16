@@ -25,16 +25,16 @@ extension Pin {
 // MARK: Accessors for photos
 extension Pin {
     
-    @objc(addPinObject:)
+    @objc(addPhotoObject:)
     @NSManaged public func addToPhotos(_ value: Photo)
     
-    @objc(addPinObject:)
+    @objc(removePhotoObject:)
     @NSManaged public func removeFromPhotos(_ value: Photo)
     
-    @objc(addPinObject:)
+    @objc(addPhoto:)
     @NSManaged public func addToPhotos(_ value: NSSet)
     
-    @objc(addPinObject:)
+    @objc(removePhoto:)
     @NSManaged public func removeFromPhotos(_ value: NSSet)
     
     
