@@ -13,8 +13,7 @@ import CoreData
 class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MKMapViewDelegate, NSFetchedResultsControllerDelegate, UICollectionViewDelegate {
         
         var dataController: DataController!
-        
-        //indexes to track
+                //indexes to track
         var insertedIndexPaths: [IndexPath]!
         var updatedIndexPaths: [IndexPath]!
         var deletedIndexPaths: [IndexPath]!
@@ -33,10 +32,9 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         var currentPinLatitude: Double!
         var currentPinLongitude: Double!
         var currentCoordinate: CLLocationCoordinate2D!
-        
+    
         @IBOutlet weak var mapView: MKMapView!
         @IBOutlet var collectionView: UICollectionView!
-        
         
         var downloadedPhotos = [Data]()
         var photoInfo: [FlickrClient.Photo]?
