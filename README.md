@@ -19,3 +19,6 @@ $ open <YourProjectName>.xcworkspace
 
 ### If using Firebase
 To add this app to a Firebase project, use the bundleID from the Xcode project. Download the generated GoogleService-Info.plist file, and copy it to the root directory.
+
+### AppIcon image credit: 
+smart.edu.co
