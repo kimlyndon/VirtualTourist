@@ -50,10 +50,10 @@
             </objects>
             <point key="canvasLocation" x="371.01449275362324" y="158.70535714285714"/>
         </scene>
-        <!--Photo Album Controller-->
+        <!--Photo Album View Controller-->
         <scene sceneID="WLG-cX-nAD">
             <objects>
-                <viewController id="cTg-0w-sTN" customClass="PhotoAlbumController" customModule="VirtualTourist" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="cTg-0w-sTN" customClass="PhotoAlbumViewController" customModule="VirtualTourist" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Kqn-y8-3CD">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="480"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
