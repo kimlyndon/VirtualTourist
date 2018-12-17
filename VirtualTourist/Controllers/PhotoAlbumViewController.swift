@@ -180,7 +180,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         }
         
         
-        @IBAction func newCollectionButtonPressed(_ sender: UIBarButtonItem) {
+    @IBAction func newCollectionButtonPressed(_ sender: UIBarButtonItem) {
             
             //print("DL photo count: \(downloadedPhotos.count)")
             //fetch request is already established
