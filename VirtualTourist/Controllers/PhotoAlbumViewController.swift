@@ -54,7 +54,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         override func viewWillAppear(_ animated: Bool) {
             super.viewWillAppear(animated)
             print("view WIll Appear")
-            print("current pin info: \(pin)")
+            print("current pin info: \(String(describing: pin))")
             setupFetchedResultsController()
             downloadPhotosOrFetchPhotos()
         }
@@ -108,7 +108,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
                     for url in urls {
                         let photo = Photo(context: self.dataController.viewContext)
                         photo.name = url.absoluteString
-                        photo.location = self.pin
+                        photo.pin = self.pin
                         try? self.dataController.viewContext.save()
                         //print("saved CoreData photo info: \(photo)")
                     }
