@@ -10,7 +10,7 @@ import UIKit
 import MapKit
 import CoreData
 
-class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, NSFetchedResultsControllerDelegate {
+class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, NSFetchedResultsControllerDelegate, UIGestureRecognizerDelegate {
     
     @IBOutlet var mapView: MKMapView!
     @IBOutlet var gestureRecognizer: UILongPressGestureRecognizer!
@@ -26,19 +26,20 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, NSF
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         mapView.delegate = self
+        gestureRecognizer.delegate = self
+        mapView.addGestureRecognizer(gestureRecognizer)
         setupFetchedResultsController()
         
-        //        if let pin = pin {
-        //            print("Pin as of loading: \(pin)")
-        //        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         setupFetchedResultsController()
-        //        if let pin = pin {
-        //            print("Pin as of loading: \(pin)")
-        //        }
+     
+    }
+    
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWithOtherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        return true
     }
     
     override func viewWillDisappear(_ animated: Bool) {
