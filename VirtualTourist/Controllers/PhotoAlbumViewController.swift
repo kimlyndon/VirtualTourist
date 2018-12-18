@@ -49,8 +49,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
             collectionView.delegate = self
             configMap()
             setupFetchedResultsController()
-            // Do any additional setup after loading the view.
-            //print("view Did Load")
         }
         
         override func viewWillAppear(_ animated: Bool) {
@@ -63,12 +61,11 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         
         override func viewWillDisappear(_ animated: Bool) {
             super.viewWillDisappear(animated)
-            //print("view WILL disappear.")
+          
         }
         
         override func viewDidDisappear(_ animated: Bool) {
             super.viewDidDisappear(animated)
-            //print("view DID disappear")
             
             fetchedResultsController = nil
             clearAll()
@@ -106,15 +103,15 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
                 self.urlsToDownload.append(contentsOf: urls)
                 
                 DispatchQueue.main.async {
-                    //print("thread during url core data save: \(self.thread)")
+                   
                     for url in urls {
                         let photo = Photo(context: self.dataController.viewContext)
                         photo.name = url.absoluteString
                         photo.pin = self.pin
                         try? self.dataController.viewContext.save()
-                        //print("saved CoreData photo info: \(photo)")
-                    }
-                    //print("reloading Data after url download")
+                        
+                }
+                   
                     self.collectionView.reloadData()
                     print("urlsToDownload count: \(self.urlsToDownload.count)\nurls: \(self.urlsToDownload)")
                     completionForDownload(true)
@@ -311,7 +308,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
             
             let aPhoto = fetchedResultsController.object(at: indexPath)
             
-            //print("aphoto BEFORE: \(aPhoto)")
+            
             if aPhoto.image != nil {
                 //print("showing fetched image via FRC")
                 cell.imageView.image = UIImage(data: aPhoto.image!)

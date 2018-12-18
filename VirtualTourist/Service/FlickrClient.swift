@@ -105,7 +105,7 @@ class FlickrClient: NSObject {
             let randomPageNumber = Int(arc4random_uniform(UInt32(pageLimit))) + 1
             print("random page number = \(randomPageNumber)")
             
-            // TODO: CALL FUNC THAT EXECUTES SECOND NETWORK REQUEST WITH PAGE NUMBER
+            // CALL FUNC THAT EXECUTES SECOND NETWORK REQUEST WITH PAGE NUMBER
             self.searchForRandomPhotos(urlString: urlString, pageNumber: randomPageNumber, completionHandlerfForRandomPhotoSearch: { (success, urlsToDownload) in
                 guard let urlsToDownload = urlsToDownload else {
                     print("no urls returned from random search")

@@ -101,8 +101,8 @@
 		98504EFA21C2E972000FAD74 /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
-				98504EFB21C2E9DA000FAD74 /* PhotoAlbumViewController.swift */,
 				980DFCDD21A4D42C007C60EA /* TravelLocationsMapViewController.swift */,
+				98504EFB21C2E9DA000FAD74 /* PhotoAlbumViewController.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";

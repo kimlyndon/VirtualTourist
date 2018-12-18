@@ -27,11 +27,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let travelViewController = navigationController.topViewController as! TravelLocationsMapViewController
         travelViewController.dataController = dataController
         
-        //checkIfFirstLaunch()
-        
-        //        let urls = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
-        //        let path = urls[urls.count - 1] as URL
-        //        print("core data sql path: \(path)")
         return true
     }
     
