@@ -18,7 +18,7 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="1024" translatesAutoresizingMaskIntoConstraints="NO" id="JVs-gd-wnw">
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Green-Destinations-to-Present-Mass-Tourism-Solutions-pexels-photo-620x321" translatesAutoresizingMaskIntoConstraints="NO" id="JVs-gd-wnw">
                                 <rect key="frame" x="0.0" y="20" width="375" height="647"/>
                             </imageView>
                         </subviews>
@@ -38,6 +38,6 @@
         </scene>
     </scenes>
     <resources>
-        <image name="1024" width="1024" height="1024"/>
+        <image name="Green-Destinations-to-Present-Mass-Tourism-Solutions-pexels-photo-620x321" width="620" height="321"/>
     </resources>
 </document>
