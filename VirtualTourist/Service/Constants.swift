@@ -36,5 +36,11 @@ struct Constants {
         static let ResponseFormat = "json"
         static let DisableJSONCallback = "1" // 1 means "yes"
     }
+    
+    // MARK: Flickr Response Values
+    struct FlickrResponseValues {
+        static let OKStatus = "ok"
+    }
+    
   }
 }
