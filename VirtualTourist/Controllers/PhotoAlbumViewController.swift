@@ -34,7 +34,9 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         var currentCoordinate: CLLocationCoordinate2D!
     
         @IBOutlet weak var mapView: MKMapView!
-        @IBOutlet var collectionView: UICollectionView!
+        @IBOutlet weak var collectionView: UICollectionView!
+        @IBOutlet weak var barButton: UIBarButtonItem!
+        @IBOutlet weak var flowLayout: UICollectionViewFlowLayout!
     
         var downloadedPhotos = [Data]()
         var photoInfo: [FlickrClient.Photo]?
@@ -113,7 +115,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
                         //print("saved CoreData photo info: \(photo)")
                     }
                     //print("reloading Data after url download")
-                    //self.collectionView.reloadData()
+                    self.collectionView.reloadData()
                     print("urlsToDownload count: \(self.urlsToDownload.count)\nurls: \(self.urlsToDownload)")
                     completionForDownload(true)
                 }
@@ -134,7 +136,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
                     })
                 } else {
                     //FETCH PHOTOS
-                    //fetchPhotos()
+                    fetchPhotos()
                     
                 }
             } else {
@@ -182,9 +184,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         
     @IBAction func newCollectionButtonPressed(_ sender: UIBarButtonItem) {
             
-            //print("DL photo count: \(downloadedPhotos.count)")
-            //fetch request is already established
-            //NSBatchDeleteRequest
+         
             if let fetchedObjects = fetchedResultsController.fetchedObjects {
                 print("confirming fetched count: \(fetchedObjects.count)")
                 for photo in fetchedObjects {
@@ -298,7 +298,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
             }
             
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "photoCell", for: indexPath) as! PhotoCell
-            //cell.locationPhoto.image = nil
+            //cell.imageView.image = nil
             
             
             let activityIndicator = UIActivityIndicatorView(style: .whiteLarge)
