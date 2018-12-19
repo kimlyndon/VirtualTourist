@@ -58,10 +58,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         print("current pin info: \(String(describing: pin))")
         setupFetchedResultsController()
         downloadPhotosOrFetchPhotos()
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
         reloadView()
     }
     
