@@ -350,9 +350,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         let photoToDelete = fetchedResultsController.object(at: indexPath)
         print("did select: \(photoToDelete.image!)")
         
-        
-        //collectionView.deleteItems(at: [indexPath])
-        
         dataController.viewContext.delete(photoToDelete)
     }
     
