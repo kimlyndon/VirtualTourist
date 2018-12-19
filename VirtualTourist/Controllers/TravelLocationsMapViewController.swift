@@ -71,6 +71,7 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, NSF
             //add annotation to map
             self.mapView.addAnnotations(annotations)
         }
+    
     }
     
     fileprivate func setupFetchedResultsController() {
@@ -193,5 +194,5 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, NSF
             vc?.pin = self.pin
         }
     }
-}
 
+}
