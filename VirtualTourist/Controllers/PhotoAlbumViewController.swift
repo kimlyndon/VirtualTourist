@@ -49,6 +49,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
             collectionView.delegate = self
             configMap()
             setupFetchedResultsController()
+           
         }
         
         override func viewWillAppear(_ animated: Bool) {
@@ -57,6 +58,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
             print("current pin info: \(String(describing: pin))")
             setupFetchedResultsController()
             downloadPhotosOrFetchPhotos()
+           
         }
         
         override func viewWillDisappear(_ animated: Bool) {
@@ -96,9 +98,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
                     return
                 }
                 
-                //print("photosInfo: \(result.photos.photo)")
-                //self.photoInfo = result.photos.photo
-                
                 
                 self.urlsToDownload.append(contentsOf: urls)
                 
@@ -112,7 +111,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
                         
                 }
                    
-                    self.collectionView.reloadData()
                     print("urlsToDownload count: \(self.urlsToDownload.count)\nurls: \(self.urlsToDownload)")
                     completionForDownload(true)
                 }
@@ -132,8 +130,8 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
                         }
                     })
                 } else {
-                    //FETCH PHOTOS
-                    fetchPhotos()
+                   
+                    //fetchPhotos()
                     
                 }
             } else {
@@ -162,8 +160,9 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
             print("fetchPhotos")
             resetDownloadedPhotos()
             performFetch()
+        
             
-            // testing Fetch
+           
             if let fetchedObjects = fetchedResultsController.fetchedObjects {
                 print("fetched Objects count: \(fetchedObjects.count)")
                 for photo in fetchedObjects {
@@ -176,6 +175,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
             } else {
                 print("nothing was fetched")
             }
+            
         }
         
         
@@ -188,9 +188,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
                     print("photo info: \(photo.image!.description)")
                     dataController.viewContext.delete(photo)
                 }
-                //fetchPhotos()
-                //print("FRC final count count = \(fetchedResultsController.fetchedObjects?.count)")
-                //savePhotos()
+                
             } else {
                 print("no fetched photos present to delete for NewCollection")
             }
@@ -221,11 +219,13 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
             fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: nil)
             fetchedResultsController.delegate = self
             
+            
             do {
                 try fetchedResultsController.performFetch()
             } catch {
                 fatalError("The fetch could not be performed: \(error.localizedDescription)")
             }
+            
         }
         
         func configMap() {
@@ -284,13 +284,12 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         // MARK: - COLLECTION VIEW
         func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
             print("***Collection View: Number of items in section***")
-            //print("numItemsInSection count: \(fetchedResultsController.sections?[section].numberOfObjects)")
-            return fetchedResultsController.sections?[section].numberOfObjects ?? 0
+            return fetchedResultsController.sections?[section].numberOfObjects ?? 1
         }
         
         func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
             
-            if indexPath.item == 0 {
+            if indexPath.item == 1 {
                 print("***Collection View: Cell For Row at Index Path***")
             }
             
@@ -310,7 +309,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
             
             
             if aPhoto.image != nil {
-                //print("showing fetched image via FRC")
+            
                 cell.imageView.image = UIImage(data: aPhoto.image!)
                 cell.imageView.alpha = 1.0
                 activityIndicator.stopAnimating()
@@ -336,9 +335,8 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
                                     print("error saving in cellforItem: \(error.localizedDescription)")
                                 }
                             }
-                            //print("aphoto image: \(aPhoto.image)")
                             
-                            //print("aphoto info after: \(aPhoto)")
+                            
                         }
                         
                     }
@@ -351,7 +349,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         
         
         func downloadSinglePhoto1(photoURL: URL) -> Data? {
-            //print("downloading")
+        
             return FlickrClient.sharedInstance().makeImageDataFrom1(flickrURL: photoURL)
         }
         
@@ -361,8 +359,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
             let photoToDelete = fetchedResultsController.object(at: indexPath)
             print("did select: \(photoToDelete.image!)")
             
-            
-            //collectionView.deleteItems(at: [indexPath])
             
             dataController.viewContext.delete(photoToDelete)
         }
