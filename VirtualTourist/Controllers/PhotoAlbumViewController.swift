@@ -45,6 +45,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     
     override func viewDidLoad() {
         super.viewDidLoad()
+    
         mapView.delegate = self
         collectionView.dataSource = self
         collectionView.delegate = self
@@ -317,9 +318,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
             activityIndicator.hidesWhenStopped = true
             return cell
         
-        
-       
-        
         } else {
             
             
@@ -332,6 +330,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
                         cell.imageView.image = UIImage(data: image)
                         cell.imageView.alpha = 1.0
                         activityIndicator.stopAnimating()
+                        
                         if aPhoto.image == nil {
                             print("still nil")
                             aPhoto.image = image
@@ -347,10 +346,11 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
                     
                 }
             }
-            
+            activityIndicator.hidesWhenStopped = true
         }
         
         return cell
+        
     }
     
     
