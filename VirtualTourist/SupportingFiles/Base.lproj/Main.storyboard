@@ -84,21 +84,16 @@
                                                     <rect key="frame" x="0.0" y="0.0" width="120" height="120"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <subviews>
-                                                        <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="4Y1-Iq-9wd">
-                                                            <rect key="frame" x="0.0" y="0.0" width="120" height="120"/>
+                                                        <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="4Y1-Iq-9wd">
+                                                            <rect key="frame" x="0.0" y="-12" width="120" height="251"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                         </imageView>
                                                         <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="ufu-vO-9yJ">
-                                                            <rect key="frame" x="50" y="50" width="20" height="20"/>
+                                                            <rect key="frame" x="44" y="44" width="20" height="20"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                         </activityIndicatorView>
                                                     </subviews>
                                                 </view>
-                                                <constraints>
-                                                    <constraint firstAttribute="bottom" secondItem="4Y1-Iq-9wd" secondAttribute="bottom" id="28B-Lg-jJq"/>
-                                                    <constraint firstAttribute="trailing" secondItem="4Y1-Iq-9wd" secondAttribute="trailing" id="Hlg-s4-Pjb"/>
-                                                    <constraint firstItem="4Y1-Iq-9wd" firstAttribute="leading" secondItem="nyS-2W-AbN" secondAttribute="leading" id="X7x-QD-OAQ"/>
-                                                    <constraint firstItem="4Y1-Iq-9wd" firstAttribute="top" secondItem="nyS-2W-AbN" secondAttribute="top" id="iLh-hU-c1B"/>
-                                                </constraints>
                                                 <connections>
                                                     <outlet property="activityIndicator" destination="ufu-vO-9yJ" id="xEh-mI-SpC"/>
                                                     <outlet property="imageView" destination="4Y1-Iq-9wd" id="8wj-hw-U55"/>
