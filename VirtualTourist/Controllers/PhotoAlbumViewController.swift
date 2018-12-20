@@ -45,12 +45,22 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        let space:CGFloat = 3.0
+        let dimension = (view.frame.size.width - (2 * space)) / 3.0
+        let dimension2 = (view.frame.size.height - (2 * space)) / 3.0
+        
+        flowLayout.minimumInteritemSpacing = space
+        flowLayout.minimumLineSpacing = space
+        flowLayout.itemSize = CGSize(width: dimension, height: dimension2)
+        
     
         mapView.delegate = self
         collectionView.dataSource = self
         collectionView.delegate = self
         configMap()
         setupFetchedResultsController()
+       
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -60,6 +70,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         setupFetchedResultsController()
         downloadPhotosOrFetchPhotos()
         reloadView()
+        
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -281,11 +292,11 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let cellWidth = collectionView.bounds.width/3.0
         let cellHeight = cellWidth
-        
+    
         return CGSize(width: cellWidth, height: cellHeight)
     }
     
-   func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         print("***Collection View: Number of items in section***")
         return fetchedResultsController.sections?[section].numberOfObjects ?? 3
     }
@@ -308,6 +319,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         cell.addSubview(activityIndicator)
         cell.imageView.image = #imageLiteral(resourceName: "VirtualTourist_1024")
         activityIndicator.startAnimating()
+        
         let aPhoto = fetchedResultsController.object(at: indexPath)
         
         if aPhoto.image != nil {
@@ -346,7 +358,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
                     
                 }
             }
-            activityIndicator.hidesWhenStopped = true
         }
         
         return cell

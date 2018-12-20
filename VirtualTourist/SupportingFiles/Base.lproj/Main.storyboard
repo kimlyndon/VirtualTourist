@@ -85,7 +85,7 @@
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <subviews>
                                                         <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="4Y1-Iq-9wd">
-                                                            <rect key="frame" x="0.0" y="-12" width="120" height="251"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="120" height="251"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                         </imageView>
                                                     </subviews>
@@ -127,7 +127,7 @@
                     <connections>
                         <outlet property="barButton" destination="Yhe-OZ-ign" id="0bU-Y3-32y"/>
                         <outlet property="collectionView" destination="Tw1-9L-b2l" id="BUX-J4-z5L"/>
-                        <outlet property="flowLayout" destination="9Ic-5w-GVY" id="2lH-tI-3dP"/>
+                        <outlet property="flowLayout" destination="9Ic-5w-GVY" id="GB8-eo-Ouo"/>
                         <outlet property="mapView" destination="SQb-XF-N9s" id="IAE-A1-Uve"/>
                     </connections>
                 </viewController>
