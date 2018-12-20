@@ -289,12 +289,15 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     
     // MARK: - COLLECTION VIEW
     
-   func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let cellWidth = collectionView.bounds.width/3.0
-        let cellHeight = cellWidth
-    
-        return CGSize(width: cellWidth, height: cellHeight)
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        
+        let space:CGFloat = 8.0
+        let dimension = (view.frame.size.width - (2 * space)) / 3.0
+        let dimension2 = (view.frame.size.height - (2 * space)) / 3.0
+        
+        return CGSize(width: dimension, height: dimension2)
     }
+
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         print("***Collection View: Number of items in section***")
