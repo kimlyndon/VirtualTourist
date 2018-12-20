@@ -80,11 +80,19 @@
 				98504EF221BC9264000FAD74 /* Model */,
 				98504F0721C2F53E000FAD74 /* View */,
 				98504EFA21C2E972000FAD74 /* Controllers */,
+				981164A121CB0375007F0BF9 /* Extensions */,
 				98504F0821C2F558000FAD74 /* Service */,
 				98504EFD21C2EA66000FAD74 /* SupportingFiles */,
 				98504EFE21C2EA8C000FAD74 /* AssetsInfo */,
 			);
 			path = VirtualTourist;
+			sourceTree = "<group>";
+		};
+		981164A121CB0375007F0BF9 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Extensions;
 			sourceTree = "<group>";
 		};
 		98504EF221BC9264000FAD74 /* Model */ = {

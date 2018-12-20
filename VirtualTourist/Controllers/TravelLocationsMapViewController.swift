@@ -48,7 +48,6 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, NSF
     
     fileprivate func loadPins() {
         if let fetchedObjects = fetchedResultsController.fetchedObjects {
-            //print("total objects with ID: \(String(describing: fetchedObjects.count))")
             
             var annotations = [MKPointAnnotation]()
             
@@ -79,7 +78,8 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, NSF
         let sortDescriptor = NSSortDescriptor(key: "latitude", ascending: true)
         fetchRequest.sortDescriptors = [sortDescriptor]
         
-        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: nil)
+        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext:
+            dataController.viewContext, sectionNameKeyPath: nil, cacheName: nil)
         fetchedResultsController.delegate = self
         
         do {
@@ -93,14 +93,13 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, NSF
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
+       
     }
     
     @IBAction func getTouchLocation(_ sender: UILongPressGestureRecognizer) {
         if gestureRecognizer.state == .began {
             let point = gestureRecognizer.location(in: self.mapView)
             let coordinate = self.mapView.convert(point, toCoordinateFrom: self.mapView)
-            //print("coordinate: \(coordinate)")
             
             //add map annotation
             let annotation = MKPointAnnotation()
@@ -143,7 +142,7 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, NSF
     
     
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-        //print("annotation coordinate: \(view.annotation!.coordinate)")
+       
         if checkForMatching(coordinate: view.annotation!.coordinate) {
             self.performSegue(withIdentifier: "showPhotoAlbum", sender: self)
         } else {
@@ -164,11 +163,10 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, NSF
             for pin in savedPins {
                 
                 if pin.latitude == coordinate.latitude && pin.longitude == coordinate.longitude{
-                    //self.objectID = pin.objectID
                     self.pin = pin
                     return true
                 } else {
-                    //print("numbers don't match")
+    
                 }
             }
         }
@@ -177,8 +175,7 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, NSF
     
     
     func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
-        //print("region changed")
-        //print("mapView.region: \(mapView.region)")
+       
     }
     
     // MARK: - NAVIGATION

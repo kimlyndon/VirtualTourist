@@ -73,6 +73,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         clearAll()
     }
     
+   
     func clearAll() {
         print("Clearing all local arrays")
         photoInfo = []
@@ -180,7 +181,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         if let fetchedObjects = fetchedResultsController.fetchedObjects {
             print("confirming fetched count: \(fetchedObjects.count)")
             for photo in fetchedObjects {
-                print("photo info: \(photo.image!.description)")
+                print("photo info: \(String(describing: photo.image?.description))")
                 dataController.viewContext.delete(photo)
             }
           
@@ -204,7 +205,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         let fetchRequest: NSFetchRequest<Photo> = Photo.fetchRequest()
         let predicate: NSPredicate?
         
-        predicate = NSPredicate(format: "location == %@", pin)
+        predicate = NSPredicate(format: "pin == %@", pin)
         fetchRequest.predicate = predicate
         
         let sortDescriptor = NSSortDescriptor(key: "location", ascending: true)
@@ -274,7 +275,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     }
     
     // MARK: - COLLECTION VIEW
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+   func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         print("***Collection View: Number of items in section***")
         return fetchedResultsController.sections?[section].numberOfObjects ?? 1
     }
@@ -284,27 +285,32 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         if indexPath.item == 1 {
             print("***Collection View: Cell For Row at Index Path***")
         }
+
         
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "photoCell", for: indexPath) as! PhotoCell
         
         
-        
+    
         let activityIndicator = UIActivityIndicatorView(style: .whiteLarge)
         activityIndicator.frame = cell.bounds
         cell.backgroundColor = UIColor.darkGray
         cell.imageView.alpha = 0.5
         cell.addSubview(activityIndicator)
-        cell.imageView.image = #imageLiteral(resourceName: "Placeholder - 120x120")
+        cell.imageView.image = #imageLiteral(resourceName: "VirtualTourist_1024")
         activityIndicator.startAnimating()
-        
         let aPhoto = fetchedResultsController.object(at: indexPath)
         
         if aPhoto.image != nil {
-           
+            
             cell.imageView.image = UIImage(data: aPhoto.image!)
             cell.imageView.alpha = 1.0
             activityIndicator.stopAnimating()
+            activityIndicator.hidesWhenStopped = true
             return cell
+        
+        
+       
+        
         } else {
             
             

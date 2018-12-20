@@ -25,11 +25,6 @@ class FlickrClient: NSObject {
     }
     
     struct Photo: Decodable {
-        //    Variables needed:
-        //    Farm ID = “farm”
-        //    Server ID = “server”
-        //    ID = “id”
-        //    Secret = “secret”
         let farm: Int
         let server: String
         let id: String
@@ -57,10 +52,6 @@ class FlickrClient: NSObject {
         components.scheme = FlickrClient.Constants.Flickr.APIScheme
         components.host = FlickrClient.Constants.Flickr.APIHost
         components.path = FlickrClient.Constants.Flickr.APIPath
-        //        for (key, value) in parameters {
-        //            let queryItem = URLQueryItem(name: key, value: "\(value)")
-        //            //components.queryItems?.append(queryItem)
-        //        }
         
         return components.url!
     }
@@ -129,14 +120,13 @@ class FlickrClient: NSObject {
         //take urlString parameter from previous method
         //append page number to it
         let urlStringWithPageNumber = urlString.appending("&page=\(pageNumber)")
-        //print("new urlString: \(urlStringWithPageNumber)")
+       
         
         let url = URL(string: urlStringWithPageNumber)
         
         let session = URLSession.shared
         
         let request = URLRequest(url: url!)
-        //print("request: \(request)")
         
         let task = session.dataTask(with: request) { (data, response, error) in
             guard (error == nil) else{
@@ -167,9 +157,7 @@ class FlickrClient: NSObject {
                     urlArray.append(photoURL)
                 }
             }
-            
-            //print("photoResults count = \(self.photoResults.count)")
-            //print("photoResults = \(self.photoResults)")
+  
             completionHandlerfForRandomPhotoSearch(true, urlArray)
             
         }
