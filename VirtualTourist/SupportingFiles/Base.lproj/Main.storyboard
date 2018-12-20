@@ -84,12 +84,17 @@
                                                     <rect key="frame" x="0.0" y="0.0" width="120" height="120"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <subviews>
-                                                        <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="4Y1-Iq-9wd">
-                                                            <rect key="frame" x="0.0" y="0.0" width="120" height="251"/>
-                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                        <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="4Y1-Iq-9wd">
+                                                            <rect key="frame" x="0.0" y="0.0" width="120" height="140"/>
                                                         </imageView>
                                                     </subviews>
                                                 </view>
+                                                <constraints>
+                                                    <constraint firstAttribute="trailing" secondItem="4Y1-Iq-9wd" secondAttribute="trailing" id="3oZ-HC-TEN"/>
+                                                    <constraint firstItem="4Y1-Iq-9wd" firstAttribute="top" secondItem="nyS-2W-AbN" secondAttribute="top" id="6EK-YD-f7F"/>
+                                                    <constraint firstAttribute="bottom" secondItem="4Y1-Iq-9wd" secondAttribute="bottom" id="D8U-cb-ZcT"/>
+                                                    <constraint firstItem="4Y1-Iq-9wd" firstAttribute="leading" secondItem="nyS-2W-AbN" secondAttribute="leading" id="esJ-Wu-I7f"/>
+                                                </constraints>
                                                 <connections>
                                                     <outlet property="imageView" destination="4Y1-Iq-9wd" id="8wj-hw-U55"/>
                                                 </connections>
